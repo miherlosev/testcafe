@@ -7,7 +7,8 @@ import {
     preventRealEvents,
     disableRealEventsPreventing,
     waitFor,
-    browser
+    browser,
+    specialBrowserDriver
 } from './deps/testcafe-core';
 import { StatusBar } from './deps/testcafe-ui';
 
@@ -108,6 +109,7 @@ export default class Driver {
         this.statusBar = null;
 
         this.pageInitialRequestBarrier = new RequestBarrier();
+        this._setupSpecialBrowserDriver(options);
 
         this.readyPromise = eventUtils
             .documentReady(this.pageLoadTimeout)
@@ -121,6 +123,14 @@ export default class Driver {
         hammerhead.on(hammerhead.EVENTS.uncaughtJsError, err => this._onJsError(err));
         hammerhead.on(hammerhead.EVENTS.unhandledRejection, err => this._onJsError(err));
         hammerhead.on(hammerhead.EVENTS.consoleMethCalled, e => this._onConsoleMessage(e));
+    }
+
+    _setupSpecialBrowserDriver (options) {
+        if (!options.specialBrowserDriver)
+            return;
+
+        specialBrowserDriver.enabled    = options.specialBrowserDriver && options.specialBrowserDriver.enabled;
+        specialBrowserDriver.driverName = options.specialBrowserDriver.driverName;
     }
 
     set speed (val) {
@@ -334,6 +344,8 @@ export default class Driver {
 
     // Commands handling
     _onActionCommand (command) {
+        debugger;
+
         var { startPromise, completionPromise } = executeActionCommand(command, this.selectorTimeout, this.statusBar, this.speed);
 
         startPromise.then(() => this.contextStorage.setItem(this.COMMAND_EXECUTING_FLAG, true));

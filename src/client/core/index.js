@@ -23,6 +23,7 @@ import getKeyArray from './utils/get-key-array';
 import getSanitizedKey from './utils/get-sanitized-key';
 import parseKeySequence from './utils/parse-key-sequence';
 import sendRequestToFrame from './utils/send-request-to-frame';
+import specialBrowserDriver from './utils/special-browser-driver';
 
 import * as browser from '../browser';
 
@@ -54,6 +55,7 @@ exports.sendRequestToFrame     = sendRequestToFrame;
 exports.KEY_MAPS               = KEY_MAPS;
 exports.NODE_TYPE_DESCRIPTIONS = NODE_TYPE_DESCRIPTIONS;
 exports.browser                = browser;
+exports.specialBrowserDriver   = specialBrowserDriver;
 
 exports.selectorTextFilter      = selectorTextFilter;
 exports.selectorAttributeFilter = selectorAttributeFilter;

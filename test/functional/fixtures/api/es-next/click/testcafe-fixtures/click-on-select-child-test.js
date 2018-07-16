@@ -9,7 +9,8 @@ test('Click on an "option" element', async t => {
     await t
         .click('#simple-select')
         .click('[value=Second]')
-        .expect(Selector('#simple-select').value).eql('Second');
+        .expect(Selector('#simple-select').value).eql('Second')
+        .wait(5000);
 });
 
 test('Click on an invisible "option" element', async t => {

@@ -14,6 +14,7 @@ var eventSimulator = hammerhead.eventSandbox.eventSimulator;
 var domUtils   = testCafeCore.domUtils;
 var eventUtils = testCafeCore.eventUtils;
 var delay      = testCafeCore.delay;
+const specialBrowserDriver = testCafeCore.specialBrowserDriver;
 
 
 export default class RClickAutomation extends VisibleElementAutomation {
@@ -74,28 +75,17 @@ export default class RClickAutomation extends VisibleElementAutomation {
     }
 
     run (useStrictElementCheck) {
-        var eventArgs = null;
-
         return this
             ._ensureElement(useStrictElementCheck)
             .then(({ element, clientPoint, devicePoint }) => {
-                eventArgs = {
-                    point:   clientPoint,
-                    element: element,
-                    options: extend({
-                        clientX: clientPoint.x,
-                        clientY: clientPoint.y,
-                        screenX: devicePoint.x,
-                        screenY: devicePoint.y,
-                        button:  eventUtils.BUTTON.right
-                    }, this.modifiers)
+                const options = {
+                    clientX: clientPoint.x,
+                    clientY: clientPoint.y,
+                    modifiers: this.modifiers
                 };
 
-                // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
-                // mousedown event regardless of how long mousedown event handlers were executing
-                return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._mousedown(eventArgs)]);
-            })
-            .then(() => this._mouseup(eventArgs))
-            .then(() => this._contextmenu(eventArgs));
+                return specialBrowserDriver.performAction({ type: 'rightClick', options: options })
+                                        .then(() => delay(this.automationSettings.mouseActionStepDelay));
+            });
     }
 }

@@ -13,14 +13,15 @@ var browserUtils     = hammerhead.utils.browser;
 var featureDetection = hammerhead.utils.featureDetection;
 var eventSimulator   = hammerhead.eventSandbox.eventSimulator;
 
-var domUtils   = testCafeCore.domUtils;
-var styleUtils = testCafeCore.styleUtils;
-var eventUtils = testCafeCore.eventUtils;
-var arrayUtils = testCafeCore.arrayUtils;
-var delay      = testCafeCore.delay;
+var domUtils               = testCafeCore.domUtils;
+var styleUtils             = testCafeCore.styleUtils;
+var eventUtils             = testCafeCore.eventUtils;
+var arrayUtils             = testCafeCore.arrayUtils;
+var delay                  = testCafeCore.delay;
+var selectElementUI        = testCafeUI.selectElement;
+const specialBrowserDriver = testCafeCore.specialBrowserDriver;
 
-var selectElementUI = testCafeUI.selectElement;
-
+let prevClickedElement = null;
 
 export default class ClickAutomation extends VisibleElementAutomation {
     constructor (element, clickOptions) {
@@ -235,19 +236,28 @@ export default class ClickAutomation extends VisibleElementAutomation {
                     point:       clientPoint,
                     screenPoint: screenPoint,
                     element:     element,
-                    options:     extend({
-                        clientX: clientPoint.x,
-                        clientY: clientPoint.y,
-                        screenX: devicePoint.x,
-                        screenY: devicePoint.y
-                    }, this.modifiers)
+                    options:     {
+                        clientX:   clientPoint.x,
+                        clientY:   clientPoint.y,
+                        modifiers: this.modifiers
+                        //screenX: devicePoint.x,
+                        //screenY: devicePoint.y
+                    }
                 };
 
-                // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
-                // mousedown event regardless of how long mousedown event handlers were executing
-                return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._mousedown(eventArgs)]);
-            })
-            .then(() => this._mouseup(eventArgs))
-            .then(() => this._click(eventArgs));
+                if (specialBrowserDriver.enabled) {
+                    debugger;
+                    // For option element we need a special algorithm ()
+                    if (domUtils.isSelectElement(prevClickedElement)) {
+                        //wait for opened
+                        selectElementUI.isOptionListExpanded(prevClickedElement);
+                    }
+
+                    prevClickedElement = element;
+
+                    return specialBrowserDriver.performAction({ type: 'click', options: eventArgs.options })
+                        .then(() => delay(this.automationSettings.mouseActionStepDelay));
+                }
+            });
     }
 }

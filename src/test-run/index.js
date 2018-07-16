@@ -24,7 +24,8 @@ import TestRunBookmark from './bookmark';
 import ClientFunctionBuilder from '../client-functions/client-function-builder';
 import ReporterPluginHost from '../reporter/plugin-host';
 import BrowserConsoleMessages from './browser-console-messages';
-
+import ChromeBrowserDriver from '../browser/provider/built-in/chrome/chrome-browser-driver';
+import BROWSER_DRIVER_NAMES from '../browser/provider/built-in/browser-driver-names';
 import { TakeScreenshotOnFailCommand } from './commands/browser-manipulation';
 import { SetNativeDialogHandlerCommand, SetTestSpeedCommand, SetPageLoadTimeoutCommand } from './commands/actions';
 
@@ -78,6 +79,10 @@ export default class TestRun extends EventEmitter {
         this.session = SessionController.getSession(this);
 
         this.consoleMessages = new BrowserConsoleMessages();
+
+        this.specialBrowserDrivers = {
+            chrome: ChromeBrowserDriver.fromConnection(browserConnection)
+        };
 
         this.pendingRequest   = null;
         this.pendingPageError = null;
@@ -176,6 +181,19 @@ export default class TestRun extends EventEmitter {
         this.requestHooks.forEach(hook => this._initRequestHook(hook));
     }
 
+    _getSpecialBrowserDriverSettings () {
+        const result = {
+            enabled:    false,
+            driverName: ''
+        };
+
+        if (this.specialBrowserDrivers.chrome.enabled) {
+            result.enabled    = true;
+            result.driverName = BROWSER_DRIVER_NAMES.chrome;
+        }
+
+        return result;
+    }
 
     // Hammerhead payload
     _getPayloadScript () {
@@ -195,7 +213,8 @@ export default class TestRun extends EventEmitter {
             pageLoadTimeout:              this.pageLoadTimeout,
             skipJsErrors:                 this.opts.skipJsErrors,
             speed:                        this.speed,
-            dialogHandler:                JSON.stringify(this.activeDialogHandler)
+            dialogHandler:                JSON.stringify(this.activeDialogHandler),
+            specialBrowserDriver:         JSON.stringify(this._getSpecialBrowserDriverSettings())
         });
     }
 
@@ -632,7 +651,6 @@ export default class TestRun extends EventEmitter {
         this.disableDebugBreakpoints = false;
     }
 
-
     // Get current URL
     async getCurrentUrl () {
         var builder = new ClientFunctionBuilder(() => {
@@ -644,6 +662,21 @@ export default class TestRun extends EventEmitter {
         var getLocation = builder.getFunction();
 
         return await getLocation();
+    }
+
+    async [CLIENT_MESSAGES.performSpecialDriverAction] (msg) {
+        this.debugLog.driverMessage(msg);
+
+        if (msg.driverName === BROWSER_DRIVER_NAMES.chrome) {
+            try {
+                await this.specialBrowserDrivers.chrome.executeCommand(msg);
+            }
+            catch (e) {
+                /*eslint-disable*/
+                console.log(e);
+                /*eslint-enable*/
+            }
+        }
     }
 }
 
@@ -704,3 +737,4 @@ ServiceMessages[CLIENT_MESSAGES.waitForFileDownload] = function (msg) {
             this.resolveWaitForFileDownloadingPromise = resolve;
     });
 };
+

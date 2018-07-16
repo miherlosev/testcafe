@@ -638,7 +638,7 @@ function testFunctional (fixturesDir, testingEnvironmentName, browserProviderNam
     process.env.BROWSER_PROVIDER    = browserProviderName;
 
     return gulp
-        .src(['test/functional/setup.js', fixturesDir + '/**/test.js'])
+        .src(['test/functional/setup.js', 'C:\\Testcafe_github\\test\\functional\\fixtures\\api\\es-next\\click\\test.js'])
         .pipe(mocha({
             ui:       'bdd',
             reporter: 'spec',
@@ -662,7 +662,7 @@ gulp.step('test-functional-local-run', function () {
     return testFunctional('test/functional/fixtures', functionalTestConfig.testingEnvironmentNames.localBrowsers);
 });
 
-gulp.task('test-functional-local', gulp.series('build', 'test-functional-local-run'));
+gulp.task('test-functional-local', gulp.series(/*'build',*/ 'test-functional-local-run'));
 
 gulp.step('test-functional-local-ie-run', function () {
     return testFunctional('test/functional/fixtures', functionalTestConfig.testingEnvironmentNames.localBrowsersIE);

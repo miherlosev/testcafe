@@ -3,6 +3,12 @@ var expect = require('chai').expect;
 //GH-1674
 const TEST_DURATION_BOUND = 10000;
 
+process.on('unhandledRejection', function(reason, p){
+    console.log("Possibly Unhandled Rejection at: Promise ", p, " reason: ", reason);
+});
+
+process.on('uncaughtException', err => console.log(err));
+
 // NOTE: we run tests in chrome only, because we mainly test server API functionality.
 // Actions functionality is tested in lower-level raw API.
 describe('[API] t.click()', function () {
@@ -112,8 +118,11 @@ describe('[API] t.click()', function () {
     });
 
     describe('[Regression](GH-628)', function () {
-        it('Should click on an "option" element', function () {
-            return runTests('./testcafe-fixtures/click-on-select-child-test.js', 'Click on an "option" element');
+        it.only('Should click on an "option" element', function () {
+            return runTests('./testcafe-fixtures/click-on-select-child-test.js', 'Click on an "option" element', {shouldFail: true})
+            .catch(errs => {
+
+            });
         });
 
         it('Should fail if try to click on an "option" element in a closed "select" element', function () {
