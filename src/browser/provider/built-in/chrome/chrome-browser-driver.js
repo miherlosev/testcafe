@@ -156,6 +156,18 @@ export default class ChromeBrowserDriver extends BrowserDriver {
 
     async executeCommand (msg) {
         switch (msg.type) {
+            case 'mouseDown':
+                msg.options.clickCount = 1;
+                msg.options.button     = MOUSE_BUTTONS.left;
+
+                await this.mouse._down(msg.options);
+                break;
+            case 'mouseUp':
+                msg.options.clickCount = 1;
+                msg.options.button     = MOUSE_BUTTONS.left;
+
+                await this.mouse._up(msg.options);
+                break;
             case 'click':
                 await this.mouse.click(msg.options);
                 break;

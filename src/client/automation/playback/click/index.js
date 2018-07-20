@@ -21,8 +21,6 @@ var delay                  = testCafeCore.delay;
 var selectElementUI        = testCafeUI.selectElement;
 const specialBrowserDriver = testCafeCore.specialBrowserDriver;
 
-let prevClickedElement = null;
-
 export default class ClickAutomation extends VisibleElementAutomation {
     constructor (element, clickOptions) {
         super(element, clickOptions);
@@ -70,7 +68,6 @@ export default class ClickAutomation extends VisibleElementAutomation {
         eventUtils.bind(element, 'click', onclick);
     }
 
-
     _raiseTouchEvents (eventArgs) {
         if (featureDetection.isTouchDevice) {
             eventSimulator.touchstart(eventArgs.element, eventArgs.options);
@@ -103,7 +100,8 @@ export default class ClickAutomation extends VisibleElementAutomation {
                 this.eventState.simulateDefaultBehavior = eventSimulator.mousedown(eventArgs.element, eventArgs.options);
 
                 if (this.eventState.simulateDefaultBehavior === false)
-                    this.eventState.simulateDefaultBehavior = needCloseSelectDropDown && !this.eventState.mousedownPrevented;
+                    this.eventState.simulateDefaultBehavior = needCloseSelectDropDown &&
+                                                              !this.eventState.mousedownPrevented;
 
                 return this._ensureActiveElementBlur(activeElement);
             })
@@ -200,7 +198,8 @@ export default class ClickAutomation extends VisibleElementAutomation {
             return eventArgs.element;
 
         if (this.eventState.clickElement) {
-            const isColorInput = domUtils.isInputElement(this.eventState.clickElement) && this.eventState.clickElement.type === 'color';
+            const isColorInput = domUtils.isInputElement(this.eventState.clickElement) &&
+                                 this.eventState.clickElement.type === 'color';
 
             if (browserUtils.isFirefox && isColorInput)
                 this._bindClickHandler(this.eventState.clickElement);
@@ -226,7 +225,68 @@ export default class ClickAutomation extends VisibleElementAutomation {
         return eventArgs;
     }
 
+    _chromeMouseDown (options) {
+        return cursor.leftButtonDown()
+            .then(() => {
+                // NOTE: this is a strange code
+                //this._raiseTouchEvents(eventArgs);
+
+                // Ensure select dropdown
+                // var activeElement = domUtils.getActiveElement();
+                //
+                // this.activeElementBeforeMouseDown = activeElement;
+                //
+                // // NOTE: In WebKit and IE, the mousedown event opens the select element's dropdown;
+                // // therefore, we should prevent mousedown and hide the dropdown (B236416).
+                // var needCloseSelectDropDown = (browserUtils.isWebKit || browserUtils.isIE) &&
+                //                               domUtils.isSelectElement(this.mouseDownElement);
+                //
+                // if (needCloseSelectDropDown)
+                //     this._bindMousedownHandler();
+                //
+                // this._bindBlurHandler(activeElement);
+                //
+                // this.eventState.simulateDefaultBehavior = eventSimulator.mousedown(eventArgs.element, eventArgs.options);
+                //
+                // if (this.eventState.simulateDefaultBehavior === false)
+                //     this.eventState.simulateDefaultBehavior = needCloseSelectDropDown &&
+                //                                               !this.eventState.mousedownPrevented;
+                //
+                // return this._ensureActiveElementBlur(activeElement);
+
+                return specialBrowserDriver.performAction({ type: 'mouseDown', options });
+            });
+    }
+
+    _chromeMouseUp () {
+        return cursor
+            .buttonUp()
+            .then();
+    }
+
+    _runInChrome (useStrictElementCheck) {
+        let options = null;
+
+        return this
+            ._ensureElement(useStrictElementCheck)
+            .then(({ element, clientPoint }) => {
+                options = {
+                    clientX:   clientPoint.x,
+                    clientY:   clientPoint.y,
+                    modifiers: this.modifiers
+                };
+
+                // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
+                // mousedown event regardless of how long mousedown event handlers were executing
+                return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._chromeMouseDown(options)]);
+            })
+            .then(() => this._chromeMouseUp(options));
+    }
+
     run (useStrictElementCheck) {
+        if (specialBrowserDriver.enabled)
+            return this._runInChrome(useStrictElementCheck);
+
         var eventArgs = null;
 
         return this
@@ -236,28 +296,19 @@ export default class ClickAutomation extends VisibleElementAutomation {
                     point:       clientPoint,
                     screenPoint: screenPoint,
                     element:     element,
-                    options:     {
-                        clientX:   clientPoint.x,
-                        clientY:   clientPoint.y,
-                        modifiers: this.modifiers
-                        //screenX: devicePoint.x,
-                        //screenY: devicePoint.y
-                    }
+                    options:     extend({
+                        clientX: clientPoint.x,
+                        clientY: clientPoint.y,
+                        screenX: devicePoint.x,
+                        screenY: devicePoint.y
+                    }, this.modifiers)
                 };
 
-                if (specialBrowserDriver.enabled) {
-                    debugger;
-                    // For option element we need a special algorithm ()
-                    if (domUtils.isSelectElement(prevClickedElement)) {
-                        //wait for opened
-                        selectElementUI.isOptionListExpanded(prevClickedElement);
-                    }
-
-                    prevClickedElement = element;
-
-                    return specialBrowserDriver.performAction({ type: 'click', options: eventArgs.options })
-                        .then(() => delay(this.automationSettings.mouseActionStepDelay));
-                }
-            });
+                // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
+                // mousedown event regardless of how long mousedown event handlers were executing
+                return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._mousedown(eventArgs)]);
+            })
+            .then(() => this._mouseup(eventArgs))
+            .then(() => this._click(eventArgs));
     }
 }
