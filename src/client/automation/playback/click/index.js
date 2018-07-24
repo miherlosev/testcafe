@@ -225,7 +225,7 @@ export default class ClickAutomation extends VisibleElementAutomation {
         return eventArgs;
     }
 
-    _chromeMouseDown (options) {
+    _chromeMousePressed (options) {
         return cursor.leftButtonDown()
             .then(() => {
                 // NOTE: this is a strange code
@@ -254,14 +254,16 @@ export default class ClickAutomation extends VisibleElementAutomation {
                 //
                 // return this._ensureActiveElementBlur(activeElement);
 
-                return specialBrowserDriver.performAction({ type: 'mouseDown', options });
+                return specialBrowserDriver.performAction({ type: 'mousePressed', options });
             });
     }
 
-    _chromeMouseUp () {
+    _chromeMouseReleased (options) {
         return cursor
             .buttonUp()
-            .then();
+            .then(() => {
+                return specialBrowserDriver.performAction({ type: 'mouseReleased', options });
+            });
     }
 
     _runInChrome (useStrictElementCheck) {
@@ -278,9 +280,9 @@ export default class ClickAutomation extends VisibleElementAutomation {
 
                 // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
                 // mousedown event regardless of how long mousedown event handlers were executing
-                return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._chromeMouseDown(options)]);
+                return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._chromeMousePressed(options)]);
             })
-            .then(() => this._chromeMouseUp(options));
+            .then(() => this._chromeMouseReleased(options));
     }
 
     run (useStrictElementCheck) {

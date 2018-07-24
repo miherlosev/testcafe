@@ -348,7 +348,7 @@ gulp.step('test-client-run', function () {
     return testClient('test/client/fixtures/**/*-test.js', CLIENT_TESTS_SETTINGS);
 });
 
-gulp.task('test-client', gulp.series('build', 'test-client-run'));
+gulp.task('test-client', gulp.series(/*'build',*/ 'test-client-run'));
 
 gulp.step('test-client-local-run', function () {
     return testClient('test/client/fixtures/**/*-test.js', CLIENT_TESTS_LOCAL_SETTINGS, {}, true);

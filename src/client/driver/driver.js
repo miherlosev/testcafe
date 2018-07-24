@@ -344,8 +344,6 @@ export default class Driver {
 
     // Commands handling
     _onActionCommand (command) {
-        debugger;
-
         var { startPromise, completionPromise } = executeActionCommand(command, this.selectorTimeout, this.statusBar, this.speed);
 
         startPromise.then(() => this.contextStorage.setItem(this.COMMAND_EXECUTING_FLAG, true));

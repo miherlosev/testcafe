@@ -118,7 +118,7 @@ describe('[API] t.click()', function () {
     });
 
     describe('[Regression](GH-628)', function () {
-        it.only('Should click on an "option" element', function () {
+        it('Should click on an "option" element', function () {
             return runTests('./testcafe-fixtures/click-on-select-child-test.js', 'Click on an "option" element', {shouldFail: true})
             .catch(errs => {
 

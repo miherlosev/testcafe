@@ -105,11 +105,11 @@ class Mouse {
 
     async _baseClick (options) {
         this._move(options.clientX, options.clientY);
-        this._down(options);
-        await this._up(options);
+        this._mousePressed(options);
+        await this._mouseReleased(options);
     }
 
-    async _down (options) {
+    async _mousePressed (options) {
         await this.automationClient.send(AUTOMATION_CLIENT_COMMANDS.dispatchMouseEvent, {
             type:       MOUSE_EVENT_TYPES.mousePressed,
             button:     options.button,
@@ -120,7 +120,7 @@ class Mouse {
         });
     }
 
-    async _up (options) {
+    async _mouseReleased (options) {
         await this.automationClient.send(AUTOMATION_CLIENT_COMMANDS.dispatchMouseEvent, {
             type:       MOUSE_EVENT_TYPES.mouseReleased,
             button:     options.button,
@@ -156,17 +156,17 @@ export default class ChromeBrowserDriver extends BrowserDriver {
 
     async executeCommand (msg) {
         switch (msg.type) {
-            case 'mouseDown':
+            case 'mousePressed':
                 msg.options.clickCount = 1;
                 msg.options.button     = MOUSE_BUTTONS.left;
 
-                await this.mouse._down(msg.options);
+                await this.mouse._mousePressed(msg.options);
                 break;
-            case 'mouseUp':
+            case 'mouseReleased':
                 msg.options.clickCount = 1;
                 msg.options.button     = MOUSE_BUTTONS.left;
 
-                await this.mouse._up(msg.options);
+                await this.mouse._mouseReleased(msg.options);
                 break;
             case 'click':
                 await this.mouse.click(msg.options);
