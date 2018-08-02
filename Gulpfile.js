@@ -348,7 +348,7 @@ gulp.step('test-client-run', function () {
     return testClient('test/client/fixtures/**/*-test.js', CLIENT_TESTS_SETTINGS);
 });
 
-gulp.task('test-client', gulp.series(/*'build',*/ 'test-client-run'));
+gulp.task('test-client', gulp.series('build', 'test-client-run'));
 
 gulp.step('test-client-local-run', function () {
     return testClient('test/client/fixtures/**/*-test.js', CLIENT_TESTS_LOCAL_SETTINGS, {}, true);
@@ -662,7 +662,7 @@ gulp.step('test-functional-local-run', function () {
     return testFunctional('test/functional/fixtures', functionalTestConfig.testingEnvironmentNames.localBrowsers);
 });
 
-gulp.task('test-functional-local', gulp.series(/*'build',*/ 'test-functional-local-run'));
+gulp.task('test-functional-local', gulp.series('build', 'test-functional-local-run'));
 
 gulp.step('test-functional-local-ie-run', function () {
     return testFunctional('test/functional/fixtures', functionalTestConfig.testingEnvironmentNames.localBrowsersIE);
