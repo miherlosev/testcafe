@@ -5,14 +5,14 @@ import { focusAndSetSelection, focusByRelatedElement } from '../utils/utils';
 import cursor from '../cursor';
 import nextTick from '../utils/next-tick';
 
-var Promise = hammerhead.Promise;
+//var Promise = hammerhead.Promise;
 
-var extend         = hammerhead.utils.extend;
+//var extend         = hammerhead.utils.extend;
 var browserUtils   = hammerhead.utils.browser;
 var eventSimulator = hammerhead.eventSandbox.eventSimulator;
 
 var domUtils   = testCafeCore.domUtils;
-var eventUtils = testCafeCore.eventUtils;
+//var eventUtils = testCafeCore.eventUtils;
 var delay      = testCafeCore.delay;
 const specialBrowserDriver = testCafeCore.specialBrowserDriver;
 
@@ -77,15 +77,16 @@ export default class RClickAutomation extends VisibleElementAutomation {
     run (useStrictElementCheck) {
         return this
             ._ensureElement(useStrictElementCheck)
-            .then(({ element, clientPoint, devicePoint }) => {
+            .then(({ element, clientPoint }) => {
                 const options = {
-                    clientX: clientPoint.x,
-                    clientY: clientPoint.y,
-                    modifiers: this.modifiers
+                    clientX:   clientPoint.x,
+                    clientY:   clientPoint.y,
+                    modifiers: this.modifiers,
+                    element
                 };
 
                 return specialBrowserDriver.performAction({ type: 'rightClick', options: options })
-                                        .then(() => delay(this.automationSettings.mouseActionStepDelay));
+                    .then(() => delay(this.automationSettings.mouseActionStepDelay));
             });
     }
 }

@@ -99,9 +99,10 @@ export default class ClickAutomation extends VisibleElementAutomation {
 
                 this.eventState.simulateDefaultBehavior = eventSimulator.mousedown(eventArgs.element, eventArgs.options);
 
-                if (this.eventState.simulateDefaultBehavior === false)
+                if (this.eventState.simulateDefaultBehavior === false) {
                     this.eventState.simulateDefaultBehavior = needCloseSelectDropDown &&
                                                               !this.eventState.mousedownPrevented;
+                }
 
                 return this._ensureActiveElementBlur(activeElement);
             })
@@ -275,7 +276,8 @@ export default class ClickAutomation extends VisibleElementAutomation {
                 options = {
                     clientX:   clientPoint.x,
                     clientY:   clientPoint.y,
-                    modifiers: this.modifiers
+                    modifiers: this.modifiers,
+                    element
                 };
 
                 // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger

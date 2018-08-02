@@ -52,28 +52,28 @@ class Keyborad {
         await this._up(key);
     }
 
-    async _down (key, options) {
+    async _down (key/*, options*/) {
         await this.automationClient.send(AUTOMATION_CLIENT_COMMANDS.dispatchKeyEvent, {
             type: KEY_TYPES.keyDown,
             text: key
         });
     }
 
-    async _up (key) {
+    async _up () {
         await this.automationClient.send(AUTOMATION_CLIENT_COMMANDS.dispatchKeyEvent, {
             type: KEY_TYPES.keyUp
         });
     }
 
 
-    async typeText (options) {
-        for (const char of options.text) {
-            await this._press(char, options);
-            // if (keyDefinitions[char])
-            //     await this.press(char, { delay });
-            // else
-            //     await this.sendCharacter(char);
-        }
+    async typeText (/*options*/) {
+        // for (const char of options.text) {
+        //     await this._press(char, options);
+        //     // if (keyDefinitions[char])
+        //     //     await this.press(char, { delay });
+        //     // else
+        //     //     await this.sendCharacter(char);
+        // }
     }
 }
 

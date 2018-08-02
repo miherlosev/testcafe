@@ -97,11 +97,12 @@ export default class DblClickAutomation extends VisibleElementAutomation {
                 const options = {
                     clientX:   clientPoint.x,
                     clientY:   clientPoint.y,
-                    modifiers: this.modifiers
+                    modifiers: this.modifiers,
+                    element
                 };
 
                 return specialBrowserDriver.performAction({ type: 'doubleClick', options: options })
-                        .then(() => delay(this.automationSettings.mouseActionStepDelay));
+                    .then(() => delay(this.automationSettings.mouseActionStepDelay));
             });
     }
 }
