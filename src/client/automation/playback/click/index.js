@@ -5,20 +5,22 @@ import VisibleElementAutomation from '../visible-element-automation';
 import { focusAndSetSelection, focusByRelatedElement } from '../../utils/utils';
 import cursor from '../../cursor';
 import nextTick from '../../utils/next-tick';
+import MOUSE_BUTTONS from '../../../../browser/provider/built-in/chrome/cdp-client/mouse-buttons';
+import BROWSER_DRIVER_NAMES from '../../../../browser/provider/built-in/browser-driver-names';
 
-var Promise = hammerhead.Promise;
+const Promise = hammerhead.Promise;
 
-var extend           = hammerhead.utils.extend;
-var browserUtils     = hammerhead.utils.browser;
-var featureDetection = hammerhead.utils.featureDetection;
-var eventSimulator   = hammerhead.eventSandbox.eventSimulator;
+const extend           = hammerhead.utils.extend;
+const browserUtils     = hammerhead.utils.browser;
+const featureDetection = hammerhead.utils.featureDetection;
+const eventSimulator   = hammerhead.eventSandbox.eventSimulator;
 
-var domUtils               = testCafeCore.domUtils;
-var styleUtils             = testCafeCore.styleUtils;
-var eventUtils             = testCafeCore.eventUtils;
-var arrayUtils             = testCafeCore.arrayUtils;
-var delay                  = testCafeCore.delay;
-var selectElementUI        = testCafeUI.selectElement;
+const domUtils             = testCafeCore.domUtils;
+const styleUtils           = testCafeCore.styleUtils;
+const eventUtils           = testCafeCore.eventUtils;
+const arrayUtils           = testCafeCore.arrayUtils;
+const delay                = testCafeCore.delay;
+const selectElementUI      = testCafeUI.selectElement;
 const specialBrowserDriver = testCafeCore.specialBrowserDriver;
 
 export default class ClickAutomation extends VisibleElementAutomation {
@@ -267,21 +269,20 @@ export default class ClickAutomation extends VisibleElementAutomation {
             });
     }
 
-    _runInChrome (useStrictElementCheck) {
+    _runChrome (useStrictElementCheck) {
         let options = null;
 
         return this
             ._ensureElement(useStrictElementCheck)
-            .then(({ element, clientPoint }) => {
+            .then(({ clientPoint }) => {
                 options = {
-                    clientX:   clientPoint.x,
-                    clientY:   clientPoint.y,
-                    modifiers: this.modifiers,
-                    element
+                    clientX:    clientPoint.x,
+                    clientY:    clientPoint.y,
+                    modifiers:  this.modifiers,
+                    clickCount: 1,
+                    button:     MOUSE_BUTTONS.left
                 };
 
-                // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
-                // mousedown event regardless of how long mousedown event handlers were executing
                 return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._chromeMousePressed(options)]);
             })
             .then(() => this._chromeMouseReleased(options));
@@ -289,11 +290,13 @@ export default class ClickAutomation extends VisibleElementAutomation {
 
     run (useStrictElementCheck) {
         if (specialBrowserDriver.enabled)
-            return this._runInChrome(useStrictElementCheck);
+            return this._runChrome(useStrictElementCheck);
 
-        var eventArgs = null;
+        let eventArgs                       = null;
+        let shouldUseNativeChromeAutomation = false;
+        let chromeAutomationOptions         = null;
 
-        return this
+        const automationPromise = this
             ._ensureElement(useStrictElementCheck)
             .then(({ element, clientPoint, screenPoint, devicePoint }) => {
                 eventArgs = {
@@ -308,10 +311,31 @@ export default class ClickAutomation extends VisibleElementAutomation {
                     }, this.modifiers)
                 };
 
+                shouldUseNativeChromeAutomation = specialBrowserDriver.enabled &&
+                                                  specialBrowserDriver.name === BROWSER_DRIVER_NAMES.chrome &&
+                                                  domUtils.getTagName(element) !== 'select';
+
+                if (shouldUseNativeChromeAutomation) {
+                    chromeAutomationOptions = {
+                        clientX:    clientPoint.x,
+                        clientY:    clientPoint.y,
+                        modifiers:  this.modifiers,
+                        clickCount: 1,
+                        button:     MOUSE_BUTTONS.left
+                    };
+
+                    return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._chromeMousePressed(chromeAutomationOptions)]);
+                }
+
                 // NOTE: we should raise mouseup event with 'mouseActionStepDelay' after we trigger
                 // mousedown event regardless of how long mousedown event handlers were executing
                 return Promise.all([delay(this.automationSettings.mouseActionStepDelay), this._mousedown(eventArgs)]);
-            })
+            });
+
+        if (shouldUseNativeChromeAutomation)
+            return automationPromise.then(() => this._chromeMouseReleased(chromeAutomationOptions));
+
+        return automationPromise
             .then(() => this._mouseup(eventArgs))
             .then(() => this._click(eventArgs));
     }
