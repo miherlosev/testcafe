@@ -24,7 +24,7 @@ import TestRunBookmark from './bookmark';
 import ClientFunctionBuilder from '../client-functions/client-function-builder';
 import ReporterPluginHost from '../reporter/plugin-host';
 import BrowserConsoleMessages from './browser-console-messages';
-import ChromeBrowserDriver from '../browser/provider/built-in/chrome/chrome-browser-driver';
+import ChromeBrowserDriver from '../browser/provider/built-in/chrome/cdp-client/index';
 import BROWSER_DRIVER_NAMES from '../browser/provider/built-in/browser-driver-names';
 import { TakeScreenshotOnFailCommand } from './commands/browser-manipulation';
 import { SetNativeDialogHandlerCommand, SetTestSpeedCommand, SetPageLoadTimeoutCommand } from './commands/actions';
