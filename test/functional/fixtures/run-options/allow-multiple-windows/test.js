@@ -236,4 +236,6 @@ describe('Allow multiple windows', () => {
                 });
         });
     });
+
+    describe('Different roles in different windows', () => {});
 });
