@@ -8,19 +8,19 @@ import roleMarker from './marker-symbol';
 import { StateSnapshot } from 'testcafe-hammerhead';
 
 class Role extends EventEmitter {
-    constructor (loginPage, initFn, options = {}) {
+    constructor (loginPageUrl, initFn, options = {}) {
         super();
 
         this[roleMarker] = true;
 
         this.id    = nanoid(7);
-        this.phase = loginPage ? PHASE.uninitialized : PHASE.initialized;
+        this.phase = loginPageUrl ? PHASE.uninitialized : PHASE.initialized;
 
-        this.loginPage = loginPage;
-        this.initFn    = initFn;
-        this.opts      = options;
+        this.loginPageUrl = loginPageUrl;
+        this.initFn       = initFn;
+        this.opts         = options;
 
-        this.url           = null;
+        this.redirectUrl   = null;
         this.stateSnapshot = StateSnapshot.empty();
         this.initErr       = null;
     }
@@ -49,31 +49,33 @@ class Role extends EventEmitter {
     async initialize (testRun) {
         this.phase = PHASE.pendingInitialization;
 
-        await testRun.switchToCleanRun(this.loginPage);
+        await testRun.switchToCleanRun(this.loginPageUrl);
 
         await this._executeInitFn(testRun);
         await this._storeStateSnapshot(testRun);
 
         if (this.opts.preserveUrl)
-            this.url = await testRun.getCurrentUrl();
+            await this.setCurrentUrlAsRedirectUrl(testRun);
 
         this.phase = PHASE.initialized;
         this.emit('initialized');
     }
+
+    async setCurrentUrlAsRedirectUrl(testRun) {
+        this.redirectUrl = await testRun.getCurrentUrl();
+    }
 }
 
-export function createRole (loginPage, initFn, options = {}) {
-    assertType(is.string, 'Role', '"loginPage" argument', loginPage);
+export function createRole (loginPageUrl, initFn, options = { preserveUrl: false}) {
+    assertType(is.string, 'Role', '"loginPageUrl" argument', loginPageUrl);
     assertType(is.function, 'Role', '"initFn" argument', initFn);
     assertType(is.nonNullObject, 'Role', '"options" argument', options);
+    assertType(is.boolean, 'Role', '"preserveUrl" option', options.preserveUrl);
 
-    if (options.preserveUrl !== void 0)
-        assertType(is.boolean, 'Role', '"preserveUrl" option', options.preserveUrl);
+    loginPageUrl = resolvePageUrl(loginPageUrl);
+    initFn       = wrapTestFunction(initFn);
 
-    loginPage = resolvePageUrl(loginPage);
-    initFn    = wrapTestFunction(initFn);
-
-    return new Role(loginPage, initFn, options);
+    return new Role(loginPageUrl, initFn, options);
 }
 
 export function createAnonymousRole () {

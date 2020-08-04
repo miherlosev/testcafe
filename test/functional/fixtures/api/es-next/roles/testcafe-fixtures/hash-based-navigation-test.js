@@ -20,10 +20,10 @@ test('First role initialization', async t => {
         .expect(Selector('h1').innerText).eql('Authorized');
 });
 
-test('Using of the initialized role', async t => {
-    await t
-        .expect(hasFlag()).ok()
-        .useRole(role)
-        .expect(hasFlag()).notOk()
-        .expect(Selector('h1').innerText).eql('Authorized');
-});
+// test('Using of the initialized role', async t => {
+//     await t
+//         .expect(hasFlag()).ok()
+//         .useRole(role)
+//         .expect(hasFlag()).notOk()
+//         .expect(Selector('h1').innerText).eql('Authorized');
+// });

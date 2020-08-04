@@ -21,12 +21,13 @@ const adminRole = Role(loginPageModel.url, async t => {
     await t
         .typeText(loginPageModel.user, 'admin')
         .click(loginPageModel.submit);
-});
+}, { newSession: true });
 
 fixture `Different roles`
     .page(indexPageModel.url);
 
 test('basic', async t => {
+    // TODO: add the case then the role was already initialized.
     await t
         .expect(indexPageModel.loggedAs.innerText).eql('')
         .useRole(userRole) // How does it work?
