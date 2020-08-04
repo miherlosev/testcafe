@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Index</title>
+</head>
+<body>
+    <h1>You are logged as:<span id="logged-as"></span></h1>
+    <script>
+        var loggedAsSpan        = document.getElementById('logged-as');
+        var cookieNameValuePair = document.cookie.split('=');
+
+        loggedAsSpan.textContent = cookieNameValuePair[1];
+    </script>
+</body>
+</html>

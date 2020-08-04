@@ -237,5 +237,9 @@ describe('Allow multiple windows', () => {
         });
     });
 
-    describe('Different roles in different windows', () => {});
+    describe('Different roles in different windows', () => {
+        it.only('Basic', () => {
+            return runTests('testcafe-fixtures/different-roles/basic.js');
+        });
+    });
 });
