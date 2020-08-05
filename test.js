@@ -28,6 +28,7 @@ fixture `Different roles`
 
 test('basic', async t => {
     // TODO: add the case then the role was already initialized.
+
     await t
         .expect(indexPageModel.loggedAs.innerText).eql('')
         .useRole(userRole) // How does it work?
