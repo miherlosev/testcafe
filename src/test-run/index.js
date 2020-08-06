@@ -863,8 +863,14 @@ export default class TestRun extends AsyncEventEmitter {
         if (this.phase === PHASE.inRoleInitializer)
             throw new RoleSwitchInRoleInitializerError(callsite);
 
-        // TODO: open new session and recalculate role's urls.
-        if (role.options.newSession)
+        // TODO: open new session and recalculate role's urls???.
+        if (role.opts.newSession){
+            const newSession    = SessionController.getSession(this);
+            const currentUrl    = await this.getCurrentUrl();
+            const newSessionUrl = SessionController.getSessionUrl(this, this.session.proxy, currentUrl);
+
+            await this.navigateToUrl(newSessionUrl, true);
+        }
 
         const bookmark = new TestRunBookmark(this, role);
 

@@ -54,9 +54,12 @@ export default class SessionController extends Session {
     }
     // API
     static getSession (testRun) {
-        const windowId               = testRun.browserConnection.activeWindowId;
-        const sessionMapByConnection = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id] || {};
-        let sessionInfo              = sessionMapByConnection[windowId];
+        const windowId = testRun.browserConnection.activeWindowId;
+
+        ACTIVE_SESSIONS_MAP[testRun.browserConnection.id] = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id] || {}
+
+        const connectionSessions = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id];
+        let sessionInfo          = connectionSessions[windowId];
 
         if (!sessionInfo || !testRun.disablePageReloads) {
             if (sessionInfo && sessionInfo.url)
@@ -80,9 +83,7 @@ export default class SessionController extends Session {
 
             session.disablePageCaching   = testRun.disablePageCaching;
             session.allowMultipleWindows = TestRun.isMultipleWindowsAllowed(testRun);
-
-            if (session.allowMultipleWindows)
-                session.windowId = windowId;
+            session.windowId             = windowId;
 
             sessionInfo = {
                 session: session,
@@ -90,7 +91,8 @@ export default class SessionController extends Session {
                 url:     null
             };
 
-            ACTIVE_SESSIONS_MAP[testRun.browserConnection.id] = sessionInfo;
+            connectionSessions[windowId] = sessionInfo;
+            //ACTIVE_SESSIONS_MAP[testRun.browserConnection.id][windowId] = sessionInfo;
         }
         else if (!testRun.test.isLegacy)
             sessionInfo.session.currentTestRun = testRun;
@@ -98,8 +100,9 @@ export default class SessionController extends Session {
         return sessionInfo.session;
     }
 
-    static getSessionUrl (testRun, proxy) {
-        let sessionInfo = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id];
+    static getSessionUrl (testRun, proxy, testedPageUrl) {
+        const windowId  = testRun.browserConnection.activeWindowId;
+        let sessionInfo = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id][windowId];
 
         if (!sessionInfo || testRun.test.isLegacy) {
             SessionController.getSession(testRun);
@@ -108,7 +111,7 @@ export default class SessionController extends Session {
         }
 
         if (!sessionInfo.url) {
-            const pageUrl             = testRun.test.pageUrl;
+            const pageUrl             = testedPageUrl || testRun.test.pageUrl;
             const externalProxyHost   = testRun.opts.proxy;
             let externalProxySettings = null;
 
@@ -127,14 +130,15 @@ export default class SessionController extends Session {
     }
 
     static closeSession (testRun) {
-        const sessionInfo = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id];
+        const windowId    = testRun.browserConnection.activeWindowId;
+        const sessionInfo = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id][windowId];
 
         if (!sessionInfo || !sessionInfo.url || !sessionInfo.proxy)
             return;
 
         sessionInfo.proxy.closeSession(sessionInfo.session);
 
-        delete ACTIVE_SESSIONS_MAP[testRun.browserConnection.id];
+        delete ACTIVE_SESSIONS_MAP[testRun.browserConnection.id][windowId];
     }
 }
 

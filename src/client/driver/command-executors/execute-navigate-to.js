@@ -6,6 +6,7 @@ import DriverStatus from '../status';
 const { createNativeXHR, utils } = hammerhead;
 
 export default function executeNavigateTo (command) {
+    debugger;
     const navigationUrl = utils.url.getNavigationUrl(command.url, window);
 
     let ensurePagePromise = hammerhead.Promise.resolve();
@@ -21,6 +22,12 @@ export default function executeNavigateTo (command) {
 
             return hammerhead.Promise.all([requestBarrier.wait(), pageUnloadBarrier.wait()]);
         })
-        .then(() => new DriverStatus({ isCommandResult: true }))
-        .catch(err => new DriverStatus({ isCommandResult: true, executionError: err }));
+        .then(() => {
+            debugger;
+            return new DriverStatus({ isCommandResult: true });
+        })
+        .catch(err => {
+            debugger;
+            return new DriverStatus({ isCommandResult: true, executionError: err });
+        });
 }

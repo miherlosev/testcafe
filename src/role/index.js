@@ -7,6 +7,11 @@ import { resolvePageUrl } from '../api/test-page-url';
 import roleMarker from './marker-symbol';
 import { StateSnapshot } from 'testcafe-hammerhead';
 
+const DEFAULT_ROLE_OPTIONS = {
+    preserveUrl: false,
+    newSession:  false
+};
+
 class Role extends EventEmitter {
     constructor (loginPageUrl, initFn, options = {}) {
         super();
@@ -67,10 +72,7 @@ class Role extends EventEmitter {
 }
 
 export function createRole (loginPageUrl, initFn, options = { }) {
-    options = Object.assign(options, {
-        preserveUrl: false,
-        newSession:  false
-    });
+    options = Object.assign(DEFAULT_ROLE_OPTIONS, options);
 
     assertType(is.string, 'Role', '"loginPageUrl" argument', loginPageUrl);
     assertType(is.function, 'Role', '"initFn" argument', initFn);
