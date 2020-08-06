@@ -31,10 +31,10 @@ test('basic', async t => {
 
     await t
         .expect(indexPageModel.loggedAs.innerText).eql('')
-        //.useRole(userRole) // How does it work?
-        //.expect(indexPageModel.loggedAs.innerText).eql('user')
+        .useRole(userRole) // How does it work?
+        .expect(indexPageModel.loggedAs.innerText).eql('user')
         .openWindow(indexPageModel.url)
-        //.expect(indexPageModel.loggedAs.innerText).eql('user')
+        .expect(indexPageModel.loggedAs.innerText).eql('user')
         .useRole(adminRole)
         .expect(indexPageModel.loggedAs.innerText).eql('admin');
 });
