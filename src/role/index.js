@@ -66,7 +66,12 @@ class Role extends EventEmitter {
     }
 }
 
-export function createRole (loginPageUrl, initFn, options = { preserveUrl: false}) {
+export function createRole (loginPageUrl, initFn, options = { }) {
+    options = Object.assign(options, {
+        preserveUrl: false,
+        newSession:  false
+    });
+
     assertType(is.string, 'Role', '"loginPageUrl" argument', loginPageUrl);
     assertType(is.function, 'Role', '"initFn" argument', initFn);
     assertType(is.nonNullObject, 'Role', '"options" argument', options);

@@ -54,7 +54,9 @@ export default class SessionController extends Session {
     }
     // API
     static getSession (testRun) {
-        let sessionInfo = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id];
+        const windowId               = testRun.browserConnection.activeWindowId;
+        const sessionMapByConnection = ACTIVE_SESSIONS_MAP[testRun.browserConnection.id] || {};
+        let sessionInfo              = sessionMapByConnection[windowId];
 
         if (!sessionInfo || !testRun.disablePageReloads) {
             if (sessionInfo && sessionInfo.url)
@@ -80,7 +82,7 @@ export default class SessionController extends Session {
             session.allowMultipleWindows = TestRun.isMultipleWindowsAllowed(testRun);
 
             if (session.allowMultipleWindows)
-                session.windowId = testRun.browserConnection.activeWindowId;
+                session.windowId = windowId;
 
             sessionInfo = {
                 session: session,
