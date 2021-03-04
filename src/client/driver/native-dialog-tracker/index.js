@@ -46,6 +46,7 @@ export default class NativeDialogTracker {
     }
 
     set unexpectedDialog (dialog) {
+        debugger;
         this.contextStorage.setItem(UNEXPECTED_DIALOG, dialog);
     }
 
