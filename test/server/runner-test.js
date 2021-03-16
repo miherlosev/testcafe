@@ -154,8 +154,8 @@ describe('Runner', () => {
         it('Should fallback to the default reporter if reporter was not set', () => {
             const storedRunTaskFn = runner._runTask;
 
-            runner._runTask = reporters => {
-                const reporterPlugin = reporters[0].plugin;
+            runner._runTask = ({ reporterPlugins }) => {
+                const reporterPlugin = reporterPlugins[0].plugin;
 
                 expect(reporterPlugin.reportFixtureStart).to.be.a('function');
                 expect(reporterPlugin.reportTestDone).to.be.a('function');
@@ -441,10 +441,16 @@ describe('Runner', () => {
     });
 
     describe('.src()', () => {
-        it('Should accept source files in different forms', () => {
+        it('Should accept source files in different forms', function () {
+            this.timeout(15000);
+
             const cwd                           = process.cwd();
             const storedRunTaskFn               = runner._runTask;
             const storedGetBrowserConnectionsFn = runner.bootstrapper._getBrowserConnections;
+
+            const browserSetMock = {
+                browserConnectionGroups: []
+            };
 
             const expectedFiles = [
                 'test/server/data/test-suites/basic/testfile1.js',
@@ -455,11 +461,11 @@ describe('Runner', () => {
             runner.bootstrapper._getBrowserConnections = () => {
                 runner.bootstrapper._getBrowserConnections = storedGetBrowserConnectionsFn;
 
-                return Promise.resolve();
+                return Promise.resolve(browserSetMock);
             };
 
-            runner._runTask = (reporterPlugin, browserSet, tests) => {
-                const actualFiles = uniqBy(tests.map(test => test.testFile.filename));
+            runner._runTask = ({ task }) => {
+                const actualFiles = uniqBy(task.tests.map(test => test.testFile.filename));
 
                 expect(actualFiles).eql(expectedFiles);
 
@@ -536,8 +542,8 @@ describe('Runner', () => {
 
             runner.filter(filterFn);
 
-            runner._runTask = (reporterPlugin, browserSet, tests) => {
-                const actualTestNames = tests.map(test =>test.name).sort();
+            runner._runTask = ({ task }) => {
+                const actualTestNames = task.tests.map(test =>test.name).sort();
 
                 expectedTestNames = expectedTestNames.sort();
 

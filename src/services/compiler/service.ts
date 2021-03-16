@@ -26,6 +26,7 @@ import {
     ExecuteActionArguments,
     ExecuteCommandArguments,
     FunctionProperties,
+    InitRequestHooksArguments,
     isFixtureFunctionProperty,
     isTestFunctionProperty,
     RunTestArguments,
@@ -77,8 +78,16 @@ class CompilerService implements CompilerProtocol {
     }
 
     private _ensureTestRunProxy (testRunId: string, fixtureCtx: unknown): TestRunProxy {
-        if (!this.state.testRuns[testRunId])
-            this.state.testRuns[testRunId] = new TestRunProxy(this, testRunId, fixtureCtx, this.state.options);
+        if (!this.state.testRuns[testRunId]) {
+            const testRunProxyInit = {
+                dispatcher: this,
+                id:         testRunId,
+                options:    this.state.options,
+                fixtureCtx
+            };
+
+            this.state.testRuns[testRunId] = new TestRunProxy(testRunProxyInit);
+        }
 
         return this.state.testRuns[testRunId];
     }
@@ -166,6 +175,12 @@ class CompilerService implements CompilerProtocol {
 
     public async executeCommand ({ command, id }: ExecuteCommandArguments): Promise<unknown> {
         return this.proxy.call(this.executeCommand, { id, command });
+    }
+
+    public async initRequestHooks ({ testId }: InitRequestHooksArguments): Promise<void> {
+        //const unit = this.state.units[testId];
+
+        this.state.units[testId].id = '1';
     }
 }
 

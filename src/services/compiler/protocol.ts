@@ -41,6 +41,10 @@ export interface SetOptionsArguments {
     value: Dictionary<OptionValue>;
 }
 
+export interface InitRequestHooksArguments {
+    testId: number;
+}
+
 export interface TestRunDispatcherProtocol {
     executeAction ({ id, apiMethodName, command, callsite }: ExecuteActionArguments): Promise<unknown>;
     executeCommand ({ command }: ExecuteCommandArguments): Promise<unknown>;
@@ -56,4 +60,6 @@ export interface CompilerProtocol extends TestRunDispatcherProtocol {
     cleanUp (): Promise<void>;
 
     setOptions ({ value }: SetOptionsArguments): Promise<void>;
+
+    initRequestHooks ({ testId }: InitRequestHooksArguments): Promise<void>;
 }

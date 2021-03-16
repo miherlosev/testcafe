@@ -76,7 +76,7 @@ const CHILD_WINDOW_READY_TIMEOUT      = 30 * 1000;
 const ALL_DRIVER_TASKS_ADDED_TO_QUEUE_EVENT = 'all-driver-tasks-added-to-queue';
 
 export default class TestRun extends AsyncEventEmitter {
-    constructor (test, browserConnection, screenshotCapturer, globalWarningLog, opts) {
+    constructor ({ test, browserConnection, screenshotCapturer, globalWarningLog, opts, compilerService }) {
         super();
 
         this[testRunMarker] = true;
@@ -142,6 +142,7 @@ export default class TestRun extends AsyncEventEmitter {
         this.debugLogger = this.opts.debugLogger;
 
         this.observedCallsites = new ObservedCallsitesStorage();
+        this.compilerService   = compilerService;
 
         this._addInjectables();
         this._initRequestHooks();
@@ -249,10 +250,25 @@ export default class TestRun extends AsyncEventEmitter {
         });
     }
 
-    _initRequestHooks () {
+    _initRequestHooksInServiceProcess () {
+        // compilerService.initRequestHooks (testId)
+
+        // add initialization logic here
+        // connect with warning log then instantiate request filter rules
+        // subscribe with messages
+    }
+
+    _initRequestHooksInRegularMode () {
         this.requestHooks = Array.from(this.test.requestHooks);
 
         this.requestHooks.forEach(hook => this._initRequestHook(hook));
+    }
+
+    _initRequestHooks () {
+        if (this.compilerService)
+            this._initRequestHooksInRegularMode();
+        else
+            this._initRequestHooksInServiceProcess();
     }
 
     // Hammerhead payload
