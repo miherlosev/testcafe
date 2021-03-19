@@ -13,9 +13,7 @@ import TestRunErrorFormattableAdapter from '../errors/test-run/formattable-adapt
 import TestCafeErrorList from '../errors/error-list';
 import { GeneralError } from '../errors/runtime';
 import {
-    RequestHookUnhandledError,
     PageLoadError,
-    RequestHookNotImplementedMethodError,
     RoleSwitchInRoleInitializerError,
     SwitchToWindowPredicateError,
     WindowNotFoundError
@@ -52,6 +50,7 @@ import { GetCurrentWindowsCommand, SwitchToWindowCommand } from './commands/acti
 
 import { RUNTIME_ERRORS, TEST_RUN_ERRORS } from '../errors/types';
 import processTestFnError from '../errors/process-test-fn-error';
+import RequestHookInitializer from '../api/request-hooks/initializer';
 
 const lazyRequire                 = require('import-lazy')(require);
 const SessionController           = lazyRequire('./session-controller');
@@ -145,7 +144,6 @@ export default class TestRun extends AsyncEventEmitter {
         this.compilerService   = compilerService;
 
         this._addInjectables();
-        this._initRequestHooks();
     }
 
     _getPageLoadTimeout (test, opts) {
@@ -201,7 +199,7 @@ export default class TestRun extends AsyncEventEmitter {
     }
 
     addRequestHook (hook) {
-        if (this.requestHooks.indexOf(hook) !== -1)
+        if (this.requestHooks.includes(hook))
             return;
 
         this.requestHooks.push(hook);
@@ -209,44 +207,19 @@ export default class TestRun extends AsyncEventEmitter {
     }
 
     removeRequestHook (hook) {
-        if (this.requestHooks.indexOf(hook) === -1)
+        if (!this.requestHooks.includes(hook))
             return;
 
         pull(this.requestHooks, hook);
-        this._disposeRequestHook(hook);
+        RequestHookInitializer.dispose({ hook, session: this.session });
     }
 
     _initRequestHook (hook) {
-        hook.warningLog = this.warningLog;
-
-        hook._instantiateRequestFilterRules();
-        hook._instantiatedRequestFilterRules.forEach(rule => {
-            this.session.addRequestEventListeners(rule, {
-                onRequest:           hook.onRequest.bind(hook),
-                onConfigureResponse: hook._onConfigureResponse.bind(hook),
-                onResponse:          hook.onResponse.bind(hook)
-            }, err => this._onRequestHookMethodError(err, hook));
-        });
-    }
-
-    _onRequestHookMethodError (event, hook) {
-        let err                                      = event.error;
-        const isRequestHookNotImplementedMethodError = err instanceof RequestHookNotImplementedMethodError;
-
-        if (!isRequestHookNotImplementedMethodError) {
-            const hookClassName = hook.constructor.name;
-
-            err = new RequestHookUnhandledError(err, hookClassName, event.methodName);
-        }
-
-        this.addError(err);
-    }
-
-    _disposeRequestHook (hook) {
-        hook.warningLog = null;
-
-        hook._instantiatedRequestFilterRules.forEach(rule => {
-            this.session.removeRequestEventListeners(rule);
+        RequestHookInitializer.initialize({
+            hook,
+            warningLog:               this.warningLog,
+            session:                  this.session,
+            onRequestHookMethodError: err => this.addError(err)
         });
     }
 
@@ -266,9 +239,9 @@ export default class TestRun extends AsyncEventEmitter {
 
     async _initRequestHooks () {
         if (this.compilerService)
-            this._initRequestHooksInRegularMode();
+            await this._initRequestHooksInServiceProcess();
         else
-            this._initRequestHooksInServiceProcess();
+            this._initRequestHooksInRegularMode();
     }
 
     async initialize () {

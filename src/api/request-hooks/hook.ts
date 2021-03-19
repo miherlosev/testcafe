@@ -14,16 +14,15 @@ import WarningLog from '../../notifications/warning-log';
 
 export default abstract class RequestHook {
     protected requestFilterRules: RequestFilterRuleInit[];
-    private _instantiatedRequestFilterRules: RequestFilterRule[];
+    public _instantiatedRequestFilterRules: RequestFilterRule[];
     private readonly _responseEventConfigureOpts?: ConfigureResponseEventOptions;
-    protected warningLog: WarningLog | null;
+    public _warningLog: WarningLog | null;
 
     protected constructor (requestFilterRules: RequestFilterRuleInit | RequestFilterRuleInit[] | undefined, responseEventConfigureOpts?: ConfigureResponseEventOptions) {
         this.requestFilterRules              = this._prepareRequestFilterRules(requestFilterRules);
         this._instantiatedRequestFilterRules = [];
         this._responseEventConfigureOpts     = responseEventConfigureOpts;
-
-        this.warningLog = null;
+        this._warningLog                     = null;
     }
 
     private _prepareRequestFilterRules (rules: RequestFilterRuleInit | RequestFilterRuleInit[] | undefined): RequestFilterRuleInit[] {
@@ -33,7 +32,7 @@ export default abstract class RequestHook {
         return [RequestFilterRule.ANY];
     }
 
-    private _instantiateRequestFilterRules (): void {
+    public _instantiateRequestFilterRules (): void {
         this._instantiatedRequestFilterRules = [];
 
         this.requestFilterRules.forEach(rule => {
