@@ -267,6 +267,8 @@ export default class TestRunController extends AsyncEventEmitter {
     public async start (connection: BrowserConnection): Promise<string | null> {
         const testRun = await this._createTestRun(connection);
 
+        await testRun.initialize();
+
         const hookOk = await this._fixtureHookController.runFixtureBeforeHookIfNecessary(testRun);
 
         if (this.test.skip || !hookOk) {

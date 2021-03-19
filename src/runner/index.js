@@ -180,7 +180,8 @@ export default class Runner extends EventEmitter {
         });
     }
 
-    _runTask ({ task, reporterPlugins, browserSet, testedApp }) {
+    _runTask ({ reporterPlugins, browserSet, tests, testedApp, options }) {
+        const task              = this._createTask(tests, browserSet.browserConnectionGroups, this.proxy, options, this.warningLog);
         const reporters         = reporterPlugins.map(reporter => new Reporter(reporter.plugin, task, reporter.outStream, reporter.name));
         const completionPromise = this._getTaskResult(task, browserSet, reporters, testedApp);
         let completed           = false;
@@ -587,11 +588,7 @@ export default class Runner extends EventEmitter {
 
                 await this.bootstrapper.compilerService?.setOptions({ value: resultOptions });
 
-                const task = this._createTask(tests, browserSet.browserConnectionGroups, this.proxy, resultOptions, this.warningLog);
-
-                await task.initialize();
-
-                return this._runTask({ task, reporterPlugins, browserSet, testedApp });
+                return this._runTask({ reporterPlugins, browserSet, tests, testedApp, options: resultOptions });
             });
 
         return this._createCancelablePromise(runTaskPromise);

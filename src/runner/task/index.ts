@@ -177,8 +177,4 @@ export default class Task extends AsyncEventEmitter {
     public abort (): void {
         this._pendingBrowserJobs.forEach(job => job.abort());
     }
-
-    public async initialize (): Promise<void> {
-
-    }
 }

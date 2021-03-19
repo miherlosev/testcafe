@@ -250,7 +250,7 @@ export default class TestRun extends AsyncEventEmitter {
         });
     }
 
-    _initRequestHooksInServiceProcess () {
+    async _initRequestHooksInServiceProcess () {
         // compilerService.initRequestHooks (testId)
 
         // add initialization logic here
@@ -264,11 +264,15 @@ export default class TestRun extends AsyncEventEmitter {
         this.requestHooks.forEach(hook => this._initRequestHook(hook));
     }
 
-    _initRequestHooks () {
+    async _initRequestHooks () {
         if (this.compilerService)
             this._initRequestHooksInRegularMode();
         else
             this._initRequestHooksInServiceProcess();
+    }
+
+    async initialize () {
+        await this._initRequestHooks();
     }
 
     // Hammerhead payload

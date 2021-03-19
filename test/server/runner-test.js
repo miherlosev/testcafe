@@ -464,8 +464,8 @@ describe('Runner', () => {
                 return Promise.resolve(browserSetMock);
             };
 
-            runner._runTask = ({ task }) => {
-                const actualFiles = uniqBy(task.tests.map(test => test.testFile.filename));
+            runner._runTask = ({ tests }) => {
+                const actualFiles = uniqBy(tests.map(test => test.testFile.filename));
 
                 expect(actualFiles).eql(expectedFiles);
 
@@ -542,8 +542,8 @@ describe('Runner', () => {
 
             runner.filter(filterFn);
 
-            runner._runTask = ({ task }) => {
-                const actualTestNames = task.tests.map(test =>test.name).sort();
+            runner._runTask = ({ tests }) => {
+                const actualTestNames = tests.map(test =>test.name).sort();
 
                 expectedTestNames = expectedTestNames.sort();
 
